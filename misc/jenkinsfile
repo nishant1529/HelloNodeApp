@@ -1,0 +1,23 @@
+node {
+    def commit_id
+    stage('Preparation') {
+        checkout scm
+        bat 'git rev-parse --short HEAD' > '.git/commit_id'
+        commit_id = readFile('.git/commit_id').trim()
+    }
+
+    stage('test') {
+        nodejs(installationName: 'nodejs') {
+            bat 'npm install --only=dev'
+            bat 'npm test'
+        }
+    }
+
+    stage('build') {
+        nodejs(installationName: 'nodejs') {
+            bat 'npm install --omit=dev'
+            bat 'tar -a -c -f hello-nodejs-%BUILD_NUMBER%.zip app.js package.json package-lock.json'
+            archiveArtifacts artifacts: '*.zip', fingerprint: true
+        }
+    }
+}
