@@ -1,21 +1,28 @@
 node {
     def commit_id
+
     stage('Preparation') {
         checkout scm
-        bat 'git rev-parse --short HEAD' > '.git/commit_id'
-        commit_id = readFile('.git/commit_id').trim()
+
+        commit_id = bat(
+            script: 'git rev-parse --short HEAD',
+            returnStdout: true
+        ).trim()
+
+        echo "Commit ID: ${commit_id}"
     }
 
-    stage('test') {
+    stage('Test') {
         nodejs(installationName: 'nodejs') {
-            bat 'npm install --only=dev'
+            bat 'npm ci'
             bat 'npm test'
         }
     }
 
-     stage('docker build/push') {
-        docker.withRegistry('https://index.docker.io/v2/', 'dockerhub') {
-        def app = docker.build("nishant1529/docker-nodejs-demo:${commit_id}", '.').push()
+    stage('Build') {
+        nodejs(installationName: 'nodejs') {
+            bat 'npm ci --omit=dev'
+            archiveArtifacts artifacts: 'package*.json,app.js', fingerprint: true
         }
-   }
+    }
 }
