@@ -13,11 +13,9 @@ node {
         }
     }
 
-    stage('build') {
-        nodejs(installationName: 'nodejs') {
-            bat 'npm install --omit=dev'
-            bat 'tar -a -c -f hello-nodejs-%BUILD_NUMBER%.zip app.js package.json package-lock.json'
-            archiveArtifacts artifacts: '*.zip', fingerprint: true
+     stage('docker build/push') {
+        docker.withRegistry('https://index.docker.io/v2/', 'dockerhub') {
+        def app = docker.build("nishant1529/docker-nodejs-demo:${commit_id}", '.').push()
         }
-    }
+   }
 }
