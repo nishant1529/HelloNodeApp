@@ -13,14 +13,14 @@ node {
     }
 
     stage('Test') {
-        nodejs(installationName: 'nodejs') {
+        nodejs(nodeJSInstallationName: 'nodejs') {
             bat 'npm ci'
             bat 'npm test'
         }
     }
 
     stage('Build') {
-        nodejs(installationName: 'nodejs') {
+        nodejs(nodeJSInstallationName: 'nodejs') {
             bat 'npm ci --omit=dev'
             archiveArtifacts artifacts: 'package*.json,app.js', fingerprint: true
         }
