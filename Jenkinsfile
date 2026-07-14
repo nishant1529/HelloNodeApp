@@ -19,14 +19,29 @@ node {
         }
     }
 
+    stage('Docker Test') {
+        bat 'docker version'
+    }
+
     stage('Docker Build') {
-        def app = docker.build("nishant1630/hello-nodejs:${commit_id}")
+        bat "docker build -t nishant1630/hello-nodejs:${commit_id} ."
+    }
+
+    stage('Docker Login') {
+        withCredentials([
+            usernamePassword(
+                credentialsId: 'dockerhub',
+                usernameVariable: 'nishant1630',
+                passwordVariable: 'Docker@1234'
+            )
+        ]) {
+            bat 'echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin'
+        }
     }
 
     stage('Docker Push') {
-        docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
-            docker.image("nishant1630/hello-nodejs:${commit_id}").push()
-            docker.image("nishant1630/hello-nodejs:${commit_id}").push("latest")
-        }
+        bat "docker push nishant1630/hello-nodejs:${commit_id}"
+        bat "docker tag nishant1630/hello-nodejs:${commit_id} nishant1630/hello-nodejs:latest"
+        bat "docker push nishant1630/hello-nodejs:latest"
     }
 }
