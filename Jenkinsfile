@@ -4,12 +4,15 @@ node {
     stage('Preparation') {
         checkout scm
 
-        commit_id = bat(
-            script: 'git rev-parse --short HEAD',
+        def output = bat(
+            script: '@git rev-parse --short HEAD',
             returnStdout: true
         ).trim()
 
-        echo "Commit: ${commit_id}"
+        // Get the last non-empty line, which is the commit hash
+        commit_id = output.readLines().last().trim()
+
+        echo "Commit ID: ${commit_id}"
     }
 
     stage('Test') {
